@@ -1,0 +1,36 @@
+{
+  "name": "website-v2",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@nuxt/eslint": "1.10.0",
+    "@nuxt/fonts": "0.12.1",
+    "@nuxt/hints": "1.0.0-alpha.2",
+    "@nuxt/icon": "2.1.0",
+    "@nuxt/image": "2.0.0",
+    "@nuxt/scripts": "0.13.0",
+    "@unhead/vue": "^2.0.3",
+    "eslint": "^9.0.0",
+    "nuxt": "^4.2.1",
+    "nuxt-svgo": "4.2.6",
+    "vue": "^3.5.25",
+    "vue-router": "^4.6.3"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.48.0",
+    "@typescript-eslint/parser": "^8.48.0",
+    "@unocss/core": "^66.5.9",
+    "@unocss/nuxt": "^66.5.9",
+    "sass": "^1.94.2",
+    "typescript": "^5.9.3",
+    "unocss": "^66.5.9",
+    "vue-tsc": "^3.1.5"
+  }
+}
