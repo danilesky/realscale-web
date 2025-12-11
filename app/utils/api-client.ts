@@ -23,6 +23,7 @@ export function createApiClient(tokenManager: TokenManagerService) {
   const client = axios.create({
     baseURL: apiBaseUrl,
     timeout: apiTimeout,
+    withCredentials: true,
     headers: {
       'Content-Type': 'application/json',
     },
@@ -68,17 +69,11 @@ export function createApiClient(tokenManager: TokenManagerService) {
         isRefreshing = true
 
         try {
-          const refreshToken = tokenManager.getRefreshToken()
-
-          if (!refreshToken) {
-            tokenManager.clearTokens()
-
-            return Promise.reject(error)
-          }
-
-          const response = await axios.post<{ tokens: AuthTokens }>(`${apiBaseUrl}/auth/refresh`, {
-            refreshToken,
-          })
+          const response = await axios.post<{ tokens: AuthTokens }>(
+            `${apiBaseUrl}/auth/refresh`,
+            {},
+            { withCredentials: true },
+          )
 
           const { tokens } = response.data
 
@@ -91,6 +86,10 @@ export function createApiClient(tokenManager: TokenManagerService) {
         }
         catch (refreshError) {
           tokenManager.clearTokens()
+
+          if (import.meta.client) {
+            navigateTo('/auth/signin')
+          }
 
           return Promise.reject(refreshError)
         }

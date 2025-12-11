@@ -11,7 +11,6 @@ export interface User {
 
 export interface AuthTokens {
   accessToken: string
-  refreshToken: string
   expiresIn?: number
 }
 
@@ -29,10 +28,6 @@ export interface RegisterRequest {
   email: string
   password: string
   name: string
-}
-
-export interface RefreshTokenRequest {
-  refreshToken: string
 }
 
 export interface ChangePasswordRequest {

@@ -1,6 +1,5 @@
 import type { AxiosInstance } from 'axios'
 import type {
-  AuthTokens,
   ChangePasswordRequest,
   ChangePasswordResponse,
   LoginRequest,
@@ -35,14 +34,6 @@ export class AuthService {
     const response = await this.apiClient.post<LogoutResponse>('/auth/logout')
 
     return response.data
-  }
-
-  async refreshToken(refreshToken: string) {
-    const response = await this.apiClient.post<{ tokens: AuthTokens }>('/auth/refresh', {
-      refreshToken,
-    })
-
-    return response.data.tokens
   }
 
   async getCurrentUser() {

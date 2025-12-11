@@ -2,7 +2,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
   const { isAuthenticated, fetchUser } = useAuth()
 
   if (!isAuthenticated.value) {
-    // await fetchUser()
+    await fetchUser()
   }
 
   if (to.meta.auth === 'guest' && isAuthenticated.value) {
