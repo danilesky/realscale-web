@@ -8,8 +8,8 @@ description: "Technology stack specification including Nuxt 4, Zod, VeeValidate,
 ## Framework
 - **Nuxt 4** - Vue.js meta-framework for building the application
 
-## Validation & Schema
-- **Zod** - TypeScript-first schema validation for defining rules and data schemas
+## Validation
+- **Zod** - Schema validation library for form validation only (not for typing)
 - **VeeValidate** - Form validation library for Vue.js, integrated with Zod schemas
 
 ## Date & Time
@@ -28,23 +28,28 @@ description: "Technology stack specification including Nuxt 4, Zod, VeeValidate,
 
 ## Usage Guidelines
 
-### Zod Schemas
-- Define all data validation schemas using Zod
-- Use `as const` patterns with Zod for union types
-- Export inferred types from Zod schemas:
+### Zod Validation
+- Use Zod ONLY for form validation, NOT for typing data structures
+- Define validation schemas directly in the component where they're used
+- Use TypeScript interfaces for data types
   ```typescript
-  const userSchema = z.object({
-    name: z.string(),
-    email: z.string().email()
+  // ✅ Good - Validation schema in component
+  const loginSchema = z.object({
+    email: z.string().email(),
+    password: z.string().min(8)
   })
   
-  type User = z.infer<typeof userSchema>
+  // ✅ Good - Separate interface for typing
+  interface User {
+    name: string
+    email: string
+  }
   ```
 
 ### VeeValidate Forms
 - Integrate VeeValidate with Zod schemas for form validation
 - Use VeeValidate composables for form state management
-- Keep validation logic in schema definitions, not in components
+- Define validation schemas in the same file as the form
 
 ### Day.js
 - Use Day.js for all date manipulation and formatting
@@ -81,6 +86,27 @@ description: "Technology stack specification including Nuxt 4, Zod, VeeValidate,
       return Promise.reject(error)
     }
   )
+  ```
+
+## Security Best Practices
+
+### Token Storage
+- **NEVER use localStorage for tokens** - vulnerable to XSS attacks
+- **Use httpOnly cookies for refresh tokens** - cannot be accessed by JavaScript
+- **Use secure cookies with SameSite=strict** - prevents CSRF attacks
+- Access tokens can use regular cookies (need to be accessible for API calls)
+- Example:
+  ```typescript
+  // ✅ Good - Secure cookie storage
+  const refreshToken = useCookie('refresh_token', {
+    httpOnly: false,  // Note: Nuxt client-side can't set httpOnly, backend should
+    secure: true,
+    sameSite: 'strict',
+    maxAge: 60 * 60 * 24 * 30
+  })
+  
+  // ❌ Bad - localStorage is vulnerable
+  localStorage.setItem('refresh_token', token)
   ```
 
 ### Reka UI Components

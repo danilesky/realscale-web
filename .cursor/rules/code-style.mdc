@@ -1,6 +1,6 @@
 ---
 alwaysApply: true
-description: "Code style conventions including comments policy, naming, function definitions, TypeScript usage, and type definitions with as const instead of enums"
+description: "Code style conventions including documentation policy, comments, naming, function definitions, TypeScript usage, type definitions, class-based services, Zod validation, component styling, code breathing, and API methods"
 ---
 
 # Code Style Rules
@@ -10,6 +10,13 @@ description: "Code style conventions including comments policy, naming, function
 - Only add comments for parts that are genuinely unclear or require business context explanation
 - Code should be self-documenting through excellent naming conventions
 - If you need a comment to explain what the code does, refactor the code first
+
+## Documentation
+- **NEVER write documentation files** (README.md, GUIDE.md, USAGE.md, etc.)
+- DO NOT create .md files for explanations, guides, or examples
+- Code should be self-explanatory through good naming and structure
+- Use rules files (.mdc) only for coding standards and conventions
+- If documentation is needed, it should be requested explicitly by the user
 
 ## Naming Conventions
 - Use descriptive, intention-revealing names for functions and variables
@@ -49,6 +56,8 @@ description: "Code style conventions including comments policy, naming, function
     return items.reduce((sum, item) => sum + item.price, 0)
   }
   ```
+- **Avoid using `any` type** - Use proper types or `unknown` instead
+- ESLint allows `any` for the user, but AI should avoid it in generated code
 
 ## Type Definitions
 - **DO NOT use enums** - they add unnecessary complexity
@@ -63,6 +72,170 @@ description: "Code style conventions including comments policy, naming, function
   // ✅ Good - Use as const
   const USER_ROLES = ['admin', 'user', 'moderator'] as const
   type UserRole = typeof USER_ROLES[number]
+  ```
+
+## Zod Usage
+- **Only use Zod for validation** (forms, API inputs) - NOT for typing
+- Use TypeScript interfaces for data types and API responses
+- Define Zod validation schemas in the component/page where they're used, not in separate type files
+  ```typescript
+  // ❌ Bad - Using Zod for API response types
+  export const userSchema = z.object({
+    id: z.string(),
+    name: z.string()
+  })
+  export type User = z.infer<typeof userSchema>
+  
+  // ✅ Good - Use interfaces for types
+  export interface User {
+    id: string
+    name: string
+  }
+  
+  // ✅ Good - Zod only for validation in the component
+  // In SignIn.vue
+  const loginSchema = z.object({
+    email: z.string().email(),
+    password: z.string().min(8)
+  })
+  ```
+
+## Pinia Store Definitions
+- **Use arrow function (setup/hook) pattern** for store definitions
+- DO NOT use object syntax with state/getters/actions properties
+- Setup stores provide better composition, type inference, and flexibility
+  ```typescript
+  // ❌ Bad - Object syntax
+  export const useUserStore = defineStore('user', {
+    state: () => ({
+      user: null,
+      status: 'idle'
+    }),
+    getters: {
+      isAuthenticated: (state) => !!state.user
+    },
+    actions: {
+      async login(credentials) {
+        // ...
+      }
+    }
+  })
+  
+  // ✅ Good - Arrow function (setup) pattern
+  export const useUserStore = defineStore('user', () => {
+    const { $authService } = useNuxtApp() // Call once at top level
+    
+    const user = ref<User | null>(null)
+    const status = ref<AuthStatus>('idle')
+    
+    const isAuthenticated = computed(() => !!user.value)
+    
+    async function login(credentials: LoginRequest) {
+      const response = await $authService.login(credentials) // Reuse throughout
+      // ...
+    }
+    
+    return {
+      user,
+      status,
+      isAuthenticated,
+      login
+    }
+  })
+  ```
+- Benefits: Better TypeScript inference, more flexible composition, consistent with Vue 3 Composition API
+- Use `ref()` for reactive state, `computed()` for getters, and regular functions for actions
+- **Call composables like `useNuxtApp()` once at the top level** - NOT inside each function for performance
+
+## Services and Business Logic
+- **Use class-based programming** for services, managers, and business logic
+- DO NOT use plain objects with methods
+- Classes provide better encapsulation, testability, and enterprise patterns
+  ```typescript
+  // ❌ Bad - Plain object with methods
+  export const userService = {
+    async getUser(id: string) {
+      return await apiClient.get(`/users/${id}`)
+    }
+  }
+  
+  // ✅ Good - Class-based service
+  export class UserService {
+    async getUser(id: string) {
+      return await apiClient.get(`/users/${id}`)
+    }
+  }
+  
+  export const userService = new UserService()
+  ```
+- Export a singleton instance for convenience, but use classes for the implementation
+- This applies to: services, managers, repositories, utilities with state
+
+## API Methods and Return Values
+- **ALL API methods must return data** - never void for POST/PUT/PATCH/DELETE
+- Every action should return a response for proper error handling and user feedback
+- Define response interfaces for all API operations
+  ```typescript
+  // ❌ Bad - No return value
+  async changePassword(currentPassword: string, newPassword: string) {
+    await apiClient.post('/auth/change-password', {
+      currentPassword,
+      newPassword,
+    })
+  }
+  
+  // ✅ Good - Returns response data
+  async changePassword(data: ChangePasswordRequest) {
+    const response = await apiClient.post<ChangePasswordResponse>('/auth/change-password', data)
+    return response.data
+  }
+  ```
+- This allows callers to show success messages, handle partial failures, and get metadata
+
+## Component Styling
+- **DO NOT add scoped styles to page components**
+- Use Reka UI components or pure HTML elements without custom styles
+- Keep styling in dedicated component files or use UnoCSS utility classes
+- Pages should focus on layout and composition, not styling
+
+## Code Breathing (Blank Lines)
+- Add blank line before `if`, `for`, `while`, `switch` statements (unless at the start of function)
+- Add blank line after control flow blocks (`if`, `for`, `while`, `try/catch`)
+- Add blank line before `return` statements (unless function is single statement)
+- Group related simple variable declarations together without blank lines
+- Separate unrelated logic blocks with blank lines for readability
+  ```typescript
+  // ✅ Good - Proper blank lines
+  function processUser(userId: string) {
+    const user = getUser(userId)
+    const permissions = getPermissions(userId)
+    
+    if (!user) {
+      return null
+    }
+    
+    const isAdmin = permissions.includes('admin')
+    
+    if (isAdmin) {
+      console.log('Admin user detected')
+    }
+    
+    return user
+  }
+  
+  // ❌ Bad - No breathing room
+  function processUser(userId: string) {
+    const user = getUser(userId)
+    const permissions = getPermissions(userId)
+    if (!user) {
+      return null
+    }
+    const isAdmin = permissions.includes('admin')
+    if (isAdmin) {
+      console.log('Admin user detected')
+    }
+    return user
+  }
   ```
 
 ## Code Clarity

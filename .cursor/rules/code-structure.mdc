@@ -69,3 +69,13 @@ description: "Code structure and organization patterns including file structure,
 - Write code that is easy to test, refactor, and extend
 - Follow DRY (Don't Repeat Yourself) but avoid premature abstraction
 - Make dependencies explicit and injected, not hidden
+
+## Security Best Practices
+- **NEVER store tokens in localStorage** - use secure cookies instead
+- Store refresh tokens in httpOnly cookies (set by backend)
+- Use secure, sameSite=strict cookies for all auth tokens
+- Access tokens can be in regular cookies but should be short-lived
+- Implement CSRF protection with sameSite cookies
+- Always use HTTPS in production
+- Validate and sanitize all user inputs
+- Keep sensitive operations server-side only

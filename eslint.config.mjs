@@ -15,10 +15,11 @@ export default withNuxt(
   },
   {
     rules: {
-      indent: ['error', 2, {
+      'indent': ['error', 2, {
         SwitchCase: 1,
         ignoredNodes: ['TemplateLiteral'],
       }],
+      '@typescript-eslint/no-explicit-any': 'off',
     },
   },
 )

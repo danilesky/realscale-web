@@ -3,6 +3,7 @@ export default defineNuxtConfig({
   // devtools: { enabled: true },
 
   modules: [
+    '@pinia/nuxt',
     '@nuxt/eslint',
     '@nuxt/fonts',
     '@nuxt/hints',
@@ -40,5 +41,12 @@ export default defineNuxtConfig({
     nuxtLayers: true,
     autoImport: true,
     preflight: true,
+  },
+
+  runtimeConfig: {
+    public: {
+      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || '/api',
+      apiTimeout: Number(process.env.NUXT_PUBLIC_API_TIMEOUT) || 30000,
+    },
   },
 })

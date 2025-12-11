@@ -1,0 +1,124 @@
+---
+alwaysApply: true
+description: "Security standards for authentication, token storage, and data protection in enterprise applications"
+---
+
+# Security Rules
+
+## Token Storage
+- **NEVER use localStorage for tokens** - vulnerable to XSS attacks
+- **ALWAYS use secure cookies** with proper flags
+- Required cookie configuration:
+  ```typescript
+  const COOKIE_OPTIONS = {
+    secure: true,        // HTTPS only
+    sameSite: 'strict',  // CSRF protection
+    path: '/',
+  }
+  ```
+
+## Cookie Requirements
+
+### Access Token
+- Short-lived: 15-60 minutes maximum
+- Regular cookie (readable by client)
+- Secure + SameSite flags required
+
+### Refresh Token
+- Long-lived: 7-30 days maximum
+- Should be httpOnly (backend must set this)
+- Secure + SameSite flags required
+- Cannot be set by frontend JavaScript (security feature)
+
+### Token Expiry
+- Track expiry time in separate cookie
+- Implement 60-second buffer for proactive refresh
+- Clear all tokens on logout
+
+## Backend Security Requirements
+- Set httpOnly cookies for refresh tokens in response headers
+- Implement token rotation on refresh
+- Blacklist revoked tokens
+- Rate limiting on auth endpoints
+- HTTPS only in production
+
+## XSS Protection
+- httpOnly cookies prevent JavaScript access to refresh tokens
+- Sanitize all user inputs
+- Implement Content Security Policy
+- Escape user-generated content
+- Use secure + sameSite cookie flags
+
+## CSRF Protection
+- `sameSite: 'strict'` prevents cross-site requests
+- No additional CSRF tokens needed for same-site apps
+- For cross-origin: implement CSRF token validation
+
+## API Security
+- All sensitive operations server-side only
+- Validate inputs with Zod on forms (client-side)
+- Validate inputs on backend (never trust client)
+- Use HTTPS in production (enforce with secure flag)
+- Implement proper error messages (no sensitive data leaks)
+
+## Authentication Flow
+- Access token in Authorization header
+- Automatic refresh when token expires (60s buffer)
+- Single refresh request for concurrent 401s
+- Clear tokens and redirect on refresh failure
+- Server validates every request
+
+## Production Checklist
+- [ ] HTTPS enabled (required for secure cookies)
+- [ ] Secure flag on all cookies
+- [ ] SameSite=strict on all cookies
+- [ ] Short token expiry times
+- [ ] Token rotation implemented
+- [ ] Rate limiting on auth endpoints
+- [ ] httpOnly refresh tokens (backend)
+- [ ] Input validation (client + server)
+- [ ] Error logging (no sensitive data)
+
+## Code Examples
+
+### Secure Cookie Usage
+```typescript
+// ✅ Good - Secure cookies
+const tokenCookie = useCookie('auth_token', {
+  secure: true,
+  sameSite: 'strict',
+  maxAge: 3600
+})
+
+// ❌ Bad - localStorage
+localStorage.setItem('auth_token', token)
+```
+
+### Backend Cookie Setting
+```typescript
+// Backend must set httpOnly cookies
+res.cookie('auth_refresh_token', refreshToken, {
+  httpOnly: true,
+  secure: true,
+  sameSite: 'strict',
+  maxAge: 30 * 24 * 60 * 60 * 1000
+})
+```
+
+## Common Vulnerabilities to Avoid
+- ❌ Storing tokens in localStorage (XSS vulnerable)
+- ❌ Storing tokens in sessionStorage (XSS vulnerable)
+- ❌ Sending tokens in URL parameters (logged in history)
+- ❌ Long-lived access tokens (> 1 hour)
+- ❌ No token expiry tracking
+- ❌ Missing secure flag (allows HTTP transmission)
+- ❌ Missing sameSite flag (CSRF vulnerable)
+- ❌ Client-side only validation
+- ❌ Sensitive data in error messages
+
+## Security Monitoring
+- Log failed authentication attempts
+- Monitor refresh token usage patterns
+- Alert on suspicious activity (multiple IPs, high frequency)
+- Track token usage after logout
+- Implement incident response plan
