@@ -1,0 +1,71 @@
+---
+alwaysApply: true
+description: "Code structure and organization patterns including file structure, function organization, type safety, constants, component architecture, and enterprise-level composability standards"
+---
+
+# Code Structure Rules
+
+## Enterprise-Level Composability
+- Write **highly composable code** that can be easily reused and extended
+- Follow **SOLID principles** - especially Single Responsibility and Dependency Inversion
+- Design components and functions with **composition over configuration**
+- Create small, focused, reusable units of functionality
+- Ensure modules are loosely coupled and highly cohesive
+- Build abstractions that hide complexity but expose flexibility
+- Design for testability from the start
+
+## File Organization
+- One component/module per file
+- Group related files by feature, not by type
+- Keep file structure flat and logical
+- Use index files for clean exports when appropriate
+
+## Function Structure
+- Use normal function declarations for top-level functions and methods
+- Use arrow functions for callbacks, array methods, and function parameters
+- Keep functions small and single-purpose
+- Extract complex logic into well-named helper functions
+
+## Type Safety
+- Prefer type inference when TypeScript can infer correctly
+- Use explicit types for function parameters and return values
+- Use `as const` for constant arrays/objects to get literal types
+- Derive types from constants instead of maintaining separate enums
+
+## Constants and Configuration
+- Define constants at the top of the file or in a dedicated constants file
+- Use `as const` for arrays that should be treated as union types:
+  ```typescript
+  const NAVIGATION_ITEMS = [
+    { id: 'home', label: 'Home' },
+    { id: 'about', label: 'About' }
+  ] as const
+  
+  type NavigationItem = typeof NAVIGATION_ITEMS[number]
+  ```
+
+## Component Structure (Vue/React)
+- Props/interface definitions first
+- Constants and type definitions
+- Main component logic
+- Helper functions at the bottom
+- Use arrow functions for event handlers and computed properties
+
+## Composable Architecture Patterns
+- Extract reusable logic into composables/utilities
+- Create pure functions whenever possible (no side effects)
+- Use dependency injection for external dependencies
+- Build layered architecture: UI → Business Logic → Data Access
+- Implement adapters for third-party integrations
+- Design APIs and interfaces before implementations
+
+## Best Practices
+- Write self-explanatory code through excellent naming
+- Prefer composition over inheritance
+- Keep business logic separate from UI logic
+- Use TypeScript's type system to catch errors at compile time
+- Avoid magic numbers and strings - use named constants
+- Design for scalability and maintainability from day one
+- Write code that is easy to test, refactor, and extend
+- Follow DRY (Don't Repeat Yourself) but avoid premature abstraction
+- Make dependencies explicit and injected, not hidden

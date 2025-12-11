@@ -1,0 +1,72 @@
+---
+alwaysApply: true
+description: "Code style conventions including comments policy, naming, function definitions, TypeScript usage, and type definitions with as const instead of enums"
+---
+
+# Code Style Rules
+
+## Comments
+- Write code WITHOUT comments
+- Only add comments for parts that are genuinely unclear or require business context explanation
+- Code should be self-documenting through excellent naming conventions
+- If you need a comment to explain what the code does, refactor the code first
+
+## Naming Conventions
+- Use descriptive, intention-revealing names for functions and variables
+- Function names should clearly describe what they do
+- Variable names should clearly describe what they contain
+- Prefer longer, clear names over short, cryptic ones
+- Boolean variables should start with `is`, `has`, `should`, `can`, etc.
+
+## Function Definitions
+- Use **normal function declarations** for function definitions:
+  ```typescript
+  function fetchUserData(userId: string) {
+    // implementation
+  }
+  ```
+- Use **arrow functions** for callbacks and function parameters:
+  ```typescript
+  array.map((item) => item.id)
+  
+  function processItems(items: Item[], transform: (item: Item) => string) {
+    return items.map(transform)
+  }
+  ```
+
+## TypeScript Type Annotations
+- **DO NOT write return types** for functions and methods - TypeScript infers them automatically
+- Only specify parameter types where necessary
+- Let TypeScript's type inference do the work:
+  ```typescript
+  // ❌ Bad - Unnecessary return type
+  function calculateTotal(items: Item[]): number {
+    return items.reduce((sum, item) => sum + item.price, 0)
+  }
+  
+  // ✅ Good - Let TypeScript infer the return type
+  function calculateTotal(items: Item[]) {
+    return items.reduce((sum, item) => sum + item.price, 0)
+  }
+  ```
+
+## Type Definitions
+- **DO NOT use enums** - they add unnecessary complexity
+- Use `as const` arrays with inferred types instead:
+  ```typescript
+  // ❌ Bad - Don't use enums
+  enum UserRole {
+    Admin = 'admin',
+    User = 'user'
+  }
+  
+  // ✅ Good - Use as const
+  const USER_ROLES = ['admin', 'user', 'moderator'] as const
+  type UserRole = typeof USER_ROLES[number]
+  ```
+
+## Code Clarity
+- Prefer explicit over implicit
+- Prefer readable over clever
+- One responsibility per function
+- Keep functions small and focused

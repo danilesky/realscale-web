@@ -1,0 +1,59 @@
+---
+alwaysApply: true
+description: "Technology stack specification including Nuxt 4, Zod, VeeValidate, Day.js, Reka UI, and UnoCSS with usage guidelines"
+---
+
+# Tech Stack
+
+## Framework
+- **Nuxt 4** - Vue.js meta-framework for building the application
+
+## Validation & Schema
+- **Zod** - TypeScript-first schema validation for defining rules and data schemas
+- **VeeValidate** - Form validation library for Vue.js, integrated with Zod schemas
+
+## Date & Time
+- **Day.js** - Lightweight date manipulation and formatting library
+
+## UI Components
+- **Reka UI** - Headless UI component library for building accessible interfaces
+
+## Styling
+- **UnoCSS** - Instant on-demand atomic CSS engine
+- Use UnoCSS presets for consistent styling patterns
+
+## Usage Guidelines
+
+### Zod Schemas
+- Define all data validation schemas using Zod
+- Use `as const` patterns with Zod for union types
+- Export inferred types from Zod schemas:
+  ```typescript
+  const userSchema = z.object({
+    name: z.string(),
+    email: z.string().email()
+  })
+  
+  type User = z.infer<typeof userSchema>
+  ```
+
+### VeeValidate Forms
+- Integrate VeeValidate with Zod schemas for form validation
+- Use VeeValidate composables for form state management
+- Keep validation logic in schema definitions, not in components
+
+### Day.js
+- Use Day.js for all date manipulation and formatting
+- Import only the plugins you need to keep bundle size small
+- Prefer Day.js over native Date objects for consistency
+
+### Reka UI Components
+- Build forms and interactive components with Reka UI primitives
+- Leverage Reka UI's accessibility features
+- Style Reka UI components with UnoCSS utilities
+
+### UnoCSS
+- Use utility classes for styling
+- Define custom shortcuts in `uno.config.ts` for repeated patterns
+- Use presets for consistent design tokens
+- Avoid inline styles - use UnoCSS utilities instead
