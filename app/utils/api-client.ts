@@ -1,5 +1,6 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
 import type { AuthTokens } from '~/types/auth'
+import type { TokenManagerService } from '~/services/token-manager.service'
 
 let isRefreshing = false
 let refreshSubscribers: Array<(token: string) => void> = []
@@ -13,9 +14,8 @@ function onTokenRefreshed(token: string) {
   refreshSubscribers = []
 }
 
-export function createApiClient() {
+export function createApiClient(tokenManager: TokenManagerService) {
   const config = useRuntimeConfig()
-  const { $tokenManager } = useNuxtApp()
 
   const apiBaseUrl = config.public.apiBaseUrl
   const apiTimeout = config.public.apiTimeout
@@ -30,7 +30,7 @@ export function createApiClient() {
 
   client.interceptors.request.use(
     (config: InternalAxiosRequestConfig) => {
-      const token = $tokenManager.getAccessToken()
+      const token = tokenManager.getAccessToken()
 
       if (token && !config.headers.Authorization) {
         config.headers.Authorization = `Bearer ${token}`
@@ -68,14 +68,10 @@ export function createApiClient() {
         isRefreshing = true
 
         try {
-          const refreshToken = $tokenManager.getRefreshToken()
+          const refreshToken = tokenManager.getRefreshToken()
 
           if (!refreshToken) {
-            $tokenManager.clearTokens()
-
-            if (import.meta.client) {
-              window.location.href = '/auth/signin'
-            }
+            tokenManager.clearTokens()
 
             return Promise.reject(error)
           }
@@ -86,7 +82,7 @@ export function createApiClient() {
 
           const { tokens } = response.data
 
-          $tokenManager.setTokens(tokens)
+          tokenManager.setTokens(tokens)
           onTokenRefreshed(tokens.accessToken)
 
           originalRequest.headers.Authorization = `Bearer ${tokens.accessToken}`
@@ -94,11 +90,7 @@ export function createApiClient() {
           return client(originalRequest)
         }
         catch (refreshError) {
-          $tokenManager.clearTokens()
-
-          if (import.meta.client) {
-            window.location.href = '/auth/signin'
-          }
+          tokenManager.clearTokens()
 
           return Promise.reject(refreshError)
         }
@@ -108,15 +100,11 @@ export function createApiClient() {
       }
 
       if (error.response?.status === 403) {
-        if (import.meta.client) {
-          console.error('Access forbidden: insufficient permissions')
-        }
+        console.error('Access forbidden: insufficient permissions')
       }
 
       if (error.response?.status === 500) {
-        if (import.meta.client) {
-          console.error('Server error occurred')
-        }
+        console.error('Server error occurred')
       }
 
       return Promise.reject(error)

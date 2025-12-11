@@ -10,6 +10,8 @@ import type {
   VerifyEmailRequest,
 } from '~/types/auth'
 
+type AuthErrorCode = 'INVALID_CREDENTIALS' | 'VALIDATION_ERROR' | 'UNAUTHORIZED' | 'UNKNOWN_ERROR'
+
 export const useUserStore = defineStore('user', () => {
   const { $authService, $tokenManager } = useNuxtApp()
 
@@ -36,69 +38,68 @@ export const useUserStore = defineStore('user', () => {
     error.value = null
   }
 
-  function setError(authError: AuthError) {
-    error.value = authError
-    status.value = 'unauthenticated'
+  function createAuthError(code: AuthErrorCode, fallbackMessage: string, err: any): AuthError {
+    return {
+      code,
+      message: err.response?.data?.message || fallbackMessage,
+      details: err,
+    }
   }
 
-  function setLoading(loading: boolean) {
-    status.value = loading ? 'loading' : 'idle'
+  async function withLoading<T>(action: () => Promise<T>) {
+    status.value = 'loading'
+    error.value = null
+
+    try {
+      return await action()
+    }
+    finally {
+      if (status.value === 'loading') {
+        status.value = 'idle'
+      }
+    }
   }
 
   async function login(credentials: LoginRequest) {
-    setLoading(true)
-    error.value = null
+    return withLoading(async () => {
+      try {
+        const response = await $authService.login(credentials)
 
-    try {
-      const response = await $authService.login(credentials)
+        $tokenManager.setTokens(response.tokens)
+        setUser(response.user)
 
-      $tokenManager.setTokens(response.tokens)
-      setUser(response.user)
-
-      return response.user
-    }
-    catch (err: any) {
-      const authError: AuthError = {
-        code: 'INVALID_CREDENTIALS',
-        message: err.response?.data?.message || 'Login failed',
-        details: err,
+        return response.user
       }
+      catch (err: any) {
+        const authError = createAuthError('INVALID_CREDENTIALS', 'Login failed', err)
 
-      setError(authError)
+        error.value = authError
+        status.value = 'unauthenticated'
 
-      throw authError
-    }
-    finally {
-      setLoading(false)
-    }
+        throw authError
+      }
+    })
   }
 
   async function register(data: RegisterRequest) {
-    setLoading(true)
-    error.value = null
+    return withLoading(async () => {
+      try {
+        const response = await $authService.register(data)
 
-    try {
-      const response = await $authService.register(data)
+        $tokenManager.setTokens(response.tokens)
+        setUser(response.user)
 
-      $tokenManager.setTokens(response.tokens)
-      setUser(response.user)
-
-      return response.user
-    }
-    catch (err: any) {
-      const authError: AuthError = {
-        code: 'VALIDATION_ERROR',
-        message: err.response?.data?.message || 'Registration failed',
-        details: err,
+        return response.user
       }
+      catch (err: any) {
+        const authError = createAuthError('VALIDATION_ERROR', 'Registration failed', err)
 
-      setError(authError)
+        error.value = authError
+        status.value = 'unauthenticated'
 
-      throw authError
-    }
-    finally {
-      setLoading(false)
-    }
+        throw authError
+      }
+    })
   }
 
   async function logout() {
@@ -122,38 +123,30 @@ export const useUserStore = defineStore('user', () => {
   }
 
   async function fetchCurrentUser() {
-    const { $authService } = useNuxtApp()
-
-    if (!$tokenManager.hasValidTokens()) {
+    if (!$tokenManager.hasValidTokens) {
       status.value = 'unauthenticated'
 
       return null
     }
 
-    setLoading(true)
+    return withLoading(async () => {
+      try {
+        const userData = await $authService.getCurrentUser()
 
-    try {
-      const userData = await $authService.getCurrentUser()
+        setUser(userData)
 
-      setUser(userData)
-
-      return userData
-    }
-    catch (err: any) {
-      const authError: AuthError = {
-        code: 'UNAUTHORIZED',
-        message: 'Failed to fetch user data',
-        details: err,
+        return userData
       }
+      catch (err: any) {
+        const authError = createAuthError('UNAUTHORIZED', 'Failed to fetch user data', err)
 
-      setError(authError)
-      $tokenManager.clearTokens()
+        error.value = authError
+        status.value = 'unauthenticated'
+        $tokenManager.clearTokens()
 
-      return null
-    }
-    finally {
-      setLoading(false)
-    }
+        return null
+      }
+    })
   }
 
   async function updateProfile(data: Partial<User>) {
@@ -161,111 +154,37 @@ export const useUserStore = defineStore('user', () => {
       throw new Error('No user logged in')
     }
 
-    try {
-      const updatedUser = await $authService.updateProfile(data)
+    const updatedUser = await $authService.updateProfile(data)
 
-      setUser(updatedUser)
+    setUser(updatedUser)
 
-      return updatedUser
-    }
-    catch (err: any) {
-      const authError: AuthError = {
-        code: 'UNKNOWN_ERROR',
-        message: err.response?.data?.message || 'Failed to update profile',
-        details: err,
-      }
-
-      throw authError
-    }
+    return updatedUser
   }
 
   async function changePassword(data: ChangePasswordRequest) {
-    try {
-      const response = await $authService.changePassword(data)
-
-      return response
-    }
-    catch (err: any) {
-      const authError: AuthError = {
-        code: 'VALIDATION_ERROR',
-        message: err.response?.data?.message || 'Failed to change password',
-        details: err,
-      }
-
-      throw authError
-    }
+    return $authService.changePassword(data)
   }
 
   async function requestPasswordReset(email: string) {
-    try {
-      const response = await $authService.requestPasswordReset(email)
-
-      return response
-    }
-    catch (err: any) {
-      const authError: AuthError = {
-        code: 'UNKNOWN_ERROR',
-        message: err.response?.data?.message || 'Failed to request password reset',
-        details: err,
-      }
-
-      throw authError
-    }
+    return $authService.requestPasswordReset(email)
   }
 
   async function resetPassword(data: PasswordResetConfirmRequest) {
-    try {
-      const response = await $authService.resetPassword(data)
-
-      return response
-    }
-    catch (err: any) {
-      const authError: AuthError = {
-        code: 'VALIDATION_ERROR',
-        message: err.response?.data?.message || 'Failed to reset password',
-        details: err,
-      }
-
-      throw authError
-    }
+    return $authService.resetPassword(data)
   }
 
   async function verifyEmail(data: VerifyEmailRequest) {
-    try {
-      const response = await $authService.verifyEmail(data)
+    const response = await $authService.verifyEmail(data)
 
-      if (response.user) {
-        setUser(response.user)
-      }
-
-      return response
+    if (response.user) {
+      setUser(response.user)
     }
-    catch (err: any) {
-      const authError: AuthError = {
-        code: 'VALIDATION_ERROR',
-        message: err.response?.data?.message || 'Failed to verify email',
-        details: err,
-      }
 
-      throw authError
-    }
+    return response
   }
 
   async function resendVerificationEmail() {
-    try {
-      const response = await $authService.resendVerificationEmail()
-
-      return response
-    }
-    catch (err: any) {
-      const authError: AuthError = {
-        code: 'UNKNOWN_ERROR',
-        message: err.response?.data?.message || 'Failed to resend verification email',
-        details: err,
-      }
-
-      throw authError
-    }
+    return $authService.resendVerificationEmail()
   }
 
   function clearError() {

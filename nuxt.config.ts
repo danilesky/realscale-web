@@ -29,6 +29,13 @@ export default defineNuxtConfig({
     '~/styles/main.scss',
   ],
 
+  runtimeConfig: {
+    public: {
+      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || '/api',
+      apiTimeout: Number(process.env.NUXT_PUBLIC_API_TIMEOUT) || 30000,
+    },
+  },
+
   compatibilityDate: '2025-07-15',
 
   eslint: {
@@ -40,13 +47,6 @@ export default defineNuxtConfig({
   unocss: {
     nuxtLayers: true,
     autoImport: true,
-    preflight: true,
-  },
-
-  runtimeConfig: {
-    public: {
-      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || '/api',
-      apiTimeout: Number(process.env.NUXT_PUBLIC_API_TIMEOUT) || 30000,
-    },
+    // preflight: true,
   },
 })

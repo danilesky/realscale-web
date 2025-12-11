@@ -1,18 +1,18 @@
 export default defineNuxtRouteMiddleware(async (to) => {
   const { isAuthenticated, fetchUser } = useAuth()
 
-  if (import.meta.server) {
-    return
+  if (!isAuthenticated.value) {
+    // await fetchUser()
   }
 
-  if (!isAuthenticated.value) {
-    await fetchUser()
+  if (to.meta.auth === 'guest' && isAuthenticated.value) {
+    return navigateTo('/app')
   }
 
-  if (!isAuthenticated.value) {
+  if (to.meta.auth === 'required' && !isAuthenticated.value) {
     return navigateTo({
       path: '/auth/signin',
-      query: { redirect: to.fullPath },
+      query: { from: to.path },
     })
   }
 })
