@@ -7,6 +7,6 @@
 
 <template>
   <NuxtLayout name="app">
-    <slot />
+    <NuxtPage />
   </NuxtLayout>
 </template>

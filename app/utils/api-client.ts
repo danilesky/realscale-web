@@ -2,26 +2,25 @@ import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
 import type { AuthTokens } from '~/types/auth'
 import type { TokenManagerService } from '~/services/token-manager.service'
 
-let isRefreshing = false
-let refreshSubscribers: Array<(token: string) => void> = []
-
-function subscribeTokenRefresh(callback: (token: string) => void) {
-  refreshSubscribers.push(callback)
-}
-
-function onTokenRefreshed(token: string) {
-  refreshSubscribers.forEach(callback => callback(token))
-  refreshSubscribers = []
-}
-
 export function createApiClient(tokenManager: TokenManagerService) {
+  let isRefreshing = false
+  let refreshSubscribers: Array<(token: string) => void> = []
+
+  function subscribeTokenRefresh(callback: (token: string) => void) {
+    refreshSubscribers.push(callback)
+  }
+
+  function onTokenRefreshed(token: string) {
+    refreshSubscribers.forEach(callback => callback(token))
+    refreshSubscribers = []
+  }
   const config = useRuntimeConfig()
 
-  const apiBaseUrl = config.public.apiBaseUrl
+  const apiUrl = config.public.apiUrl
   const apiTimeout = config.public.apiTimeout
 
   const client = axios.create({
-    baseURL: apiBaseUrl,
+    baseURL: apiUrl,
     timeout: apiTimeout,
     withCredentials: true,
     headers: {
@@ -70,7 +69,7 @@ export function createApiClient(tokenManager: TokenManagerService) {
 
         try {
           const response = await axios.post<{ tokens: AuthTokens }>(
-            `${apiBaseUrl}/auth/refresh`,
+            `${apiUrl}/auth/refresh`,
             {},
             { withCredentials: true },
           )

@@ -31,12 +31,21 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL || '/api',
+      apiUrl: process.env.NUXT_PUBLIC_API_URL || '/api',
       apiTimeout: Number(process.env.NUXT_PUBLIC_API_TIMEOUT) || 30000,
     },
   },
 
   compatibilityDate: '2025-07-15',
+
+  typescript: {
+    tsConfig: {
+      compilerOptions: {
+        experimentalDecorators: true,
+        emitDecoratorMetadata: true,
+      },
+    },
+  },
 
   eslint: {
     config: {
