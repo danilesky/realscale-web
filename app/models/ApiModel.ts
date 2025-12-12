@@ -7,6 +7,15 @@ import {
 } from 'class-transformer'
 
 export abstract class ApiModel {
+  abstract readonly endpoint: string
+  abstract readonly id: string
+
+  $endpoint(detail = false) {
+    const base = `/api/${this.endpoint}`
+
+    return detail ? `${base}/${this.id}` : base
+  }
+
   constructor(object?: object) {
     if (object) {
       Object.assign(this, plainToInstance(this.constructor as ClassConstructor<this>, object, {

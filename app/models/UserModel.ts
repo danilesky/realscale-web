@@ -2,6 +2,8 @@ import { Expose, Transform, Type } from 'class-transformer'
 import { ApiModel } from './ApiModel'
 
 export class UserModel extends ApiModel {
+  readonly endpoint = 'users'
+
   @Expose()
   id!: string
 
