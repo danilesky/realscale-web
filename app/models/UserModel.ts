@@ -5,32 +5,32 @@ export class UserModel extends ApiModel {
   readonly endpoint = 'users'
 
   @Expose()
-  id!: string
+  declare id: string
 
   @Expose()
-  email!: string
+  declare email: string
 
   @Expose()
-  name!: string
+  declare name: string
 
   @Expose()
-  role!: string
+  declare role: string
 
   @Expose()
-  avatar?: string | null
+  declare avatar: string | null | undefined
 
   @Expose()
-  emailVerified?: boolean
-
-  @Expose()
-  @Type(() => Date)
-  @Transform(({ value }) => (value ? new Date(value) : undefined), { toClassOnly: true })
-  createdAt?: Date
+  declare emailVerified: boolean | undefined
 
   @Expose()
   @Type(() => Date)
   @Transform(({ value }) => (value ? new Date(value) : undefined), { toClassOnly: true })
-  updatedAt?: Date
+  declare createdAt: Date | undefined
+
+  @Expose()
+  @Type(() => Date)
+  @Transform(({ value }) => (value ? new Date(value) : undefined), { toClassOnly: true })
+  declare updatedAt: Date | undefined
 
   get initials() {
     return this.name
@@ -49,4 +49,3 @@ export class UserModel extends ApiModel {
     return this.name || this.email.split('@')[0]
   }
 }
-
