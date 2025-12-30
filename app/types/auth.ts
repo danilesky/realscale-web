@@ -1,12 +1,16 @@
+export const AUTH_PROVIDERS = ['local', 'google'] as const
+export type AuthProvider = typeof AUTH_PROVIDERS[number]
+
 export interface User {
   id: string
   email: string
-  name: string
-  role: string
-  avatar?: string | null
-  emailVerified?: boolean
-  createdAt?: string
-  updatedAt?: string
+  firstName: string | null
+  lastName: string | null
+  avatarUrl: string | null
+  provider: AuthProvider
+  googleId: string | null
+  createdAt: string
+  updatedAt: string
 }
 
 export interface AuthTokens {
@@ -20,14 +24,20 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
+  accessToken: string
   user: User
-  tokens: AuthTokens
 }
 
 export interface RegisterRequest {
   email: string
   password: string
-  name: string
+  firstName?: string
+  lastName?: string
+}
+
+export interface RefreshResponse {
+  accessToken: string
+  expiresIn?: number
 }
 
 export interface ChangePasswordRequest {
@@ -85,6 +95,7 @@ export const AUTH_ERROR_CODES = [
   'UNAUTHORIZED',
   'NETWORK_ERROR',
   'VALIDATION_ERROR',
+  'EMAIL_ALREADY_EXISTS',
   'UNKNOWN_ERROR',
 ] as const
 

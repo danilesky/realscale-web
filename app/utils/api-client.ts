@@ -1,5 +1,5 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
-import type { AuthTokens } from '~/types/auth'
+import type { RefreshResponse } from '~/types/auth'
 import type { TokenManagerService } from '~/services/token-manager.service'
 
 export function createApiClient(tokenManager: TokenManagerService) {
@@ -14,6 +14,7 @@ export function createApiClient(tokenManager: TokenManagerService) {
     refreshSubscribers.forEach(callback => callback(token))
     refreshSubscribers = []
   }
+
   const config = useRuntimeConfig()
 
   const apiUrl = config.public.apiUrl
@@ -68,18 +69,18 @@ export function createApiClient(tokenManager: TokenManagerService) {
         isRefreshing = true
 
         try {
-          const response = await axios.post<{ tokens: AuthTokens }>(
+          const response = await axios.post<RefreshResponse>(
             `${apiUrl}/auth/refresh`,
             {},
             { withCredentials: true },
           )
 
-          const { tokens } = response.data
+          const { accessToken, expiresIn } = response.data
 
-          tokenManager.setTokens(tokens)
-          onTokenRefreshed(tokens.accessToken)
+          tokenManager.setTokens({ accessToken, expiresIn })
+          onTokenRefreshed(accessToken)
 
-          originalRequest.headers.Authorization = `Bearer ${tokens.accessToken}`
+          originalRequest.headers.Authorization = `Bearer ${accessToken}`
 
           return client(originalRequest)
         }

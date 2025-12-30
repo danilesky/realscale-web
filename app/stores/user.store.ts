@@ -6,35 +6,26 @@ import type {
   LoginRequest,
   PasswordResetConfirmRequest,
   RegisterRequest,
-  User,
   VerifyEmailRequest,
 } from '~/types/auth'
+import { UserModel } from '~/models/user.model'
 
-type AuthErrorCode = 'INVALID_CREDENTIALS' | 'VALIDATION_ERROR' | 'UNAUTHORIZED' | 'UNKNOWN_ERROR'
+type AuthErrorCode = 'INVALID_CREDENTIALS' | 'VALIDATION_ERROR' | 'UNAUTHORIZED' | 'EMAIL_ALREADY_EXISTS' | 'UNKNOWN_ERROR'
 
 export const useUserStore = defineStore('user', () => {
   const { $authService, $tokenManager } = useNuxtApp()
 
-  const user = ref<User | null>(null)
+  const user = ref<UserModel | null>(null)
   const status = ref<AuthStatus>('idle')
   const error = ref<AuthError | null>(null)
 
   const isAuthenticated = computed(() => status.value === 'authenticated' && !!user.value)
   const isLoading = computed(() => status.value === 'loading')
   const currentUser = computed(() => user.value)
-  const userRole = computed(() => user.value?.role)
 
-  function hasRole(role: string) {
-    return user.value?.role === role
-  }
-
-  function hasAnyRole(roles: string[]) {
-    return !!user.value?.role && roles.includes(user.value.role)
-  }
-
-  function setUser(newUser: User | null) {
-    user.value = newUser
-    status.value = newUser ? 'authenticated' : 'unauthenticated'
+  function setUser(userData: object | null) {
+    user.value = userData ? UserModel.toModel(userData) : null
+    status.value = userData ? 'authenticated' : 'unauthenticated'
     error.value = null
   }
 
@@ -65,7 +56,7 @@ export const useUserStore = defineStore('user', () => {
       try {
         const response = await $authService.login(credentials)
 
-        $tokenManager.setTokens(response.tokens)
+        $tokenManager.setTokens({ accessToken: response.accessToken })
         setUser(response.user)
 
         return response.user
@@ -86,13 +77,14 @@ export const useUserStore = defineStore('user', () => {
       try {
         const response = await $authService.register(data)
 
-        $tokenManager.setTokens(response.tokens)
+        $tokenManager.setTokens({ accessToken: response.accessToken })
         setUser(response.user)
 
         return response.user
       }
       catch (err: any) {
-        const authError = createAuthError('VALIDATION_ERROR', 'Registration failed', err)
+        const errorCode = err.response?.status === 409 ? 'EMAIL_ALREADY_EXISTS' : 'VALIDATION_ERROR'
+        const authError = createAuthError(errorCode, 'Registration failed', err)
 
         error.value = authError
         status.value = 'unauthenticated'
@@ -104,12 +96,28 @@ export const useUserStore = defineStore('user', () => {
 
   async function logout() {
     try {
-      const response = await $authService.logout()
-
-      return response
+      await $authService.logout()
     }
     catch (err) {
       console.error('Logout failed:', err)
+    }
+    finally {
+      $tokenManager.clearTokens()
+      setUser(null)
+      error.value = null
+
+      if (import.meta.client) {
+        navigateTo('/auth/signin')
+      }
+    }
+  }
+
+  async function logoutAll() {
+    try {
+      await $authService.logoutAll()
+    }
+    catch (err) {
+      console.error('Logout all failed:', err)
     }
     finally {
       $tokenManager.clearTokens()
@@ -149,7 +157,7 @@ export const useUserStore = defineStore('user', () => {
     })
   }
 
-  async function updateProfile(data: Partial<User>) {
+  async function updateProfile(data: Partial<Pick<UserModel, 'firstName' | 'lastName' | 'avatarUrl'>>) {
     if (!user.value) {
       throw new Error('No user logged in')
     }
@@ -158,7 +166,7 @@ export const useUserStore = defineStore('user', () => {
 
     setUser(updatedUser)
 
-    return updatedUser
+    return user.value
   }
 
   async function changePassword(data: ChangePasswordRequest) {
@@ -187,6 +195,11 @@ export const useUserStore = defineStore('user', () => {
     return $authService.resendVerificationEmail()
   }
 
+  function initiateGoogleLogin() {
+    const config = useRuntimeConfig()
+    window.location.href = `${config.public.apiUrl}/auth/google`
+  }
+
   function clearError() {
     error.value = null
   }
@@ -204,12 +217,10 @@ export const useUserStore = defineStore('user', () => {
     isAuthenticated,
     isLoading,
     currentUser,
-    userRole,
-    hasRole,
-    hasAnyRole,
     login,
     register,
     logout,
+    logoutAll,
     fetchCurrentUser,
     updateProfile,
     changePassword,
@@ -217,6 +228,7 @@ export const useUserStore = defineStore('user', () => {
     resetPassword,
     verifyEmail,
     resendVerificationEmail,
+    initiateGoogleLogin,
     clearError,
     reset,
   }

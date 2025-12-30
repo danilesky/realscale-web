@@ -8,9 +8,10 @@ definePageMeta({
 })
 
 const registerSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  firstName: z.string().min(2, 'First name must be at least 2 characters').max(100),
+  lastName: z.string().min(2, 'Last name must be at least 2 characters').max(100),
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters').max(72),
 })
 
 const router = useRouter()
@@ -20,7 +21,8 @@ const { handleSubmit, defineField, errors } = useForm({
   validationSchema: toTypedSchema(registerSchema),
 })
 
-const [name] = defineField('name')
+const [firstName] = defineField('firstName')
+const [lastName] = defineField('lastName')
 const [email] = defineField('email')
 const [password] = defineField('password')
 
@@ -41,14 +43,25 @@ const onSubmit = handleSubmit(async (values) => {
 
     <form @submit="onSubmit">
       <div>
-        <label for="name">Full Name</label>
+        <label for="firstName">First Name</label>
         <input
-          id="name"
-          v-model="name"
+          id="firstName"
+          v-model="firstName"
           type="text"
-          placeholder="John Doe"
+          placeholder="John"
         >
-        <span v-if="errors.name">{{ errors.name }}</span>
+        <span v-if="errors.firstName">{{ errors.firstName }}</span>
+      </div>
+
+      <div>
+        <label for="lastName">Last Name</label>
+        <input
+          id="lastName"
+          v-model="lastName"
+          type="text"
+          placeholder="Doe"
+        >
+        <span v-if="errors.lastName">{{ errors.lastName }}</span>
       </div>
 
       <div>

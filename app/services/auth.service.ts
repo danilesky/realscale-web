@@ -4,7 +4,6 @@ import type {
   ChangePasswordResponse,
   LoginRequest,
   LoginResponse,
-  LogoutResponse,
   PasswordResetConfirmRequest,
   PasswordResetConfirmResponse,
   PasswordResetRequestResponse,
@@ -31,9 +30,11 @@ export class AuthService {
   }
 
   async logout() {
-    const response = await this.apiClient.post<LogoutResponse>('/auth/logout')
+    await this.apiClient.post('/auth/logout')
+  }
 
-    return response.data
+  async logoutAll() {
+    await this.apiClient.post('/auth/logout-all')
   }
 
   async getCurrentUser() {

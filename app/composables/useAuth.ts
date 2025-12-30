@@ -25,6 +25,10 @@ export function useAuth() {
     return await userStore.logout()
   }
 
+  async function logoutAll() {
+    return await userStore.logoutAll()
+  }
+
   async function fetchUser() {
     return await userStore.fetchCurrentUser()
   }
@@ -53,16 +57,12 @@ export function useAuth() {
     return await userStore.resendVerificationEmail()
   }
 
+  function initiateGoogleLogin() {
+    userStore.initiateGoogleLogin()
+  }
+
   function clearError() {
     userStore.clearError()
-  }
-
-  function hasRole(role: string) {
-    return userStore.hasRole(role)
-  }
-
-  function hasAnyRole(roles: string[]) {
-    return userStore.hasAnyRole(roles)
   }
 
   return {
@@ -74,6 +74,7 @@ export function useAuth() {
     login,
     register,
     logout,
+    logoutAll,
     fetchUser,
     updateProfile,
     changePassword,
@@ -81,8 +82,7 @@ export function useAuth() {
     resetPassword,
     verifyEmail,
     resendVerificationEmail,
+    initiateGoogleLogin,
     clearError,
-    hasRole,
-    hasAnyRole,
   }
 }

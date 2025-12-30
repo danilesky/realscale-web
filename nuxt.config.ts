@@ -31,7 +31,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiUrl: process.env.NUXT_PUBLIC_API_URL || '/api',
+      apiUrl: process.env.NUXT_PUBLIC_API_URL || 'http://localhost:3001',
       apiTimeout: Number(process.env.NUXT_PUBLIC_API_TIMEOUT) || 30000,
     },
   },
