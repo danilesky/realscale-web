@@ -1,17 +1,22 @@
 <script setup lang="ts">
-const { user, logout } = useAuth()
+const { user, isInitializing, logout } = useAuth()
 </script>
 
 <template>
   <div>
     <h1>Protected App Page</h1>
-    <div v-if="user">
+
+    <template v-if="!isInitializing && user">
       <p>Welcome, {{ user.fullName }}!</p>
       <p>Email: {{ user.email }}</p>
 
       <button @click="logout">
         Logout
       </button>
-    </div>
+    </template>
+
+    <p v-else>
+      Loading...
+    </p>
   </div>
 </template>

@@ -11,7 +11,7 @@ import type {
 
 export function useAuth() {
   const userStore = useUserStore()
-  const { user, status, error, isAuthenticated, isLoading } = storeToRefs(userStore)
+  const { user, status, error, isAuthenticated, isLoading, isInitializing } = storeToRefs(userStore)
 
   async function login(credentials: LoginRequest) {
     return await userStore.login(credentials)
@@ -27,10 +27,6 @@ export function useAuth() {
 
   async function logoutAll() {
     return await userStore.logoutAll()
-  }
-
-  async function fetchUser() {
-    return await userStore.fetchCurrentUser()
   }
 
   async function updateProfile(data: Partial<User>) {
@@ -71,11 +67,11 @@ export function useAuth() {
     error: readonly(error),
     isAuthenticated: readonly(isAuthenticated),
     isLoading: readonly(isLoading),
+    isInitializing: readonly(isInitializing),
     login,
     register,
     logout,
     logoutAll,
-    fetchUser,
     updateProfile,
     changePassword,
     requestPasswordReset,

@@ -7,10 +7,10 @@ definePageMeta({
   layout: false,
 })
 
-const registerSchema = z.object({
+const schema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters').max(100),
   lastName: z.string().min(2, 'Last name must be at least 2 characters').max(100),
-  email: z.string().email('Invalid email address'),
+  email: z.email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters').max(72),
 })
 
@@ -18,7 +18,7 @@ const router = useRouter()
 const { register, error, isLoading } = useAuth()
 
 const { handleSubmit, defineField, errors } = useForm({
-  validationSchema: toTypedSchema(registerSchema),
+  validationSchema: toTypedSchema(schema),
 })
 
 const [firstName] = defineField('firstName')

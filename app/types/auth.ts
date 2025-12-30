@@ -85,6 +85,15 @@ export interface LogoutResponse {
   success: boolean
 }
 
+export const SESSION_STATUS = [
+  'initializing',
+  'restoring',
+  'authenticated',
+  'unauthenticated',
+] as const
+
+export type SessionStatus = typeof SESSION_STATUS[number]
+
 export const AUTH_STATUS = ['idle', 'loading', 'authenticated', 'unauthenticated'] as const
 export type AuthStatus = typeof AUTH_STATUS[number]
 

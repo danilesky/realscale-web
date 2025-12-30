@@ -7,7 +7,7 @@ definePageMeta({
   layout: false,
 })
 
-const loginSchema = z.object({
+const schema = z.object({
   email: z.email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
 })
@@ -17,7 +17,7 @@ const route = useRoute()
 const { login, error, isLoading } = useAuth()
 
 const { handleSubmit, defineField, errors } = useForm({
-  validationSchema: toTypedSchema(loginSchema),
+  validationSchema: toTypedSchema(schema),
 })
 
 const [email] = defineField('email')
@@ -26,8 +26,7 @@ const [password] = defineField('password')
 const onSubmit = handleSubmit(async (values) => {
   try {
     await login(values)
-    const redirect = route.query.redirect as string
-    router.push(redirect || '/app')
+    router.push(route.query.redirect as string || '/app')
   }
   catch (err) {
     console.error('Login failed:', err)

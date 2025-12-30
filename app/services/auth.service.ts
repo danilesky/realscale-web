@@ -1,4 +1,4 @@
-import type { AxiosInstance } from 'axios'
+import type { ApiClient } from '~/utils/api-client'
 import type {
   ChangePasswordRequest,
   ChangePasswordResponse,
@@ -15,18 +15,14 @@ import type {
 } from '~/types/auth'
 
 export class AuthService {
-  constructor(private apiClient: AxiosInstance) {}
+  constructor(private apiClient: ApiClient) {}
 
   async login(credentials: LoginRequest) {
-    const response = await this.apiClient.post<LoginResponse>('/auth/login', credentials)
-
-    return response.data
+    return this.apiClient.post<LoginResponse>('/auth/login', credentials)
   }
 
   async register(data: RegisterRequest) {
-    const response = await this.apiClient.post<LoginResponse>('/auth/register', data)
-
-    return response.data
+    return this.apiClient.post<LoginResponse>('/auth/register', data)
   }
 
   async logout() {
@@ -38,44 +34,30 @@ export class AuthService {
   }
 
   async getCurrentUser() {
-    const response = await this.apiClient.get<User>('/auth/me')
-
-    return response.data
+    return this.apiClient.get<User>('/auth/me')
   }
 
   async updateProfile(data: Partial<User>) {
-    const response = await this.apiClient.patch<User>('/auth/profile', data)
-
-    return response.data
+    return this.apiClient.patch<User>('/auth/profile', data)
   }
 
   async changePassword(data: ChangePasswordRequest) {
-    const response = await this.apiClient.post<ChangePasswordResponse>('/auth/change-password', data)
-
-    return response.data
+    return this.apiClient.post<ChangePasswordResponse>('/auth/change-password', data)
   }
 
   async requestPasswordReset(email: string) {
-    const response = await this.apiClient.post<PasswordResetRequestResponse>('/auth/password-reset/request', { email })
-
-    return response.data
+    return this.apiClient.post<PasswordResetRequestResponse>('/auth/password-reset/request', { email })
   }
 
   async resetPassword(data: PasswordResetConfirmRequest) {
-    const response = await this.apiClient.post<PasswordResetConfirmResponse>('/auth/password-reset/confirm', data)
-
-    return response.data
+    return this.apiClient.post<PasswordResetConfirmResponse>('/auth/password-reset/confirm', data)
   }
 
   async verifyEmail(data: VerifyEmailRequest) {
-    const response = await this.apiClient.post<VerifyEmailResponse>('/auth/verify-email', data)
-
-    return response.data
+    return this.apiClient.post<VerifyEmailResponse>('/auth/verify-email', data)
   }
 
   async resendVerificationEmail() {
-    const response = await this.apiClient.post<ResendVerificationResponse>('/auth/verify-email/resend')
-
-    return response.data
+    return this.apiClient.post<ResendVerificationResponse>('/auth/verify-email/resend')
   }
 }
